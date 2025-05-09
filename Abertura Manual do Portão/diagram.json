@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": -137.8,
+      "left": -76.8,
+      "attrs": { "color": "green", "xray": "1" }
+    },
+    { "type": "wokwi-servo", "id": "servo1", "top": -213.2, "left": 105.6, "attrs": {} }
+  ],
+  "connections": [ [ "servo1:PWM", "uno:10", "green", [ "h0" ] ] ],
+  "dependencies": {}
+}

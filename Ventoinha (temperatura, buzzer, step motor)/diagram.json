@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    { "type": "board-ds18b20", "id": "temp1", "top": -173.93, "left": 148.08, "attrs": {} },
+    {
+      "type": "wokwi-stepper-motor",
+      "id": "stepper1",
+      "top": -218.27,
+      "left": 256.89,
+      "rotate": 90,
+      "attrs": { "size": "17" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": -208.8,
+      "left": -94.2,
+      "attrs": { "volume": "0.1" }
+    }
+  ],
+  "connections": [
+    [ "bz1:2", "uno:3", "red", [ "v115.2", "h284.2" ] ],
+    [ "bz1:1", "uno:GND.1", "black", [ "v124.8", "h182.7" ] ],
+    [ "stepper1:A-", "uno:2", "green", [ "h-9.6", "v153" ] ],
+    [ "stepper1:A+", "uno:4", "green", [ "h-28.8", "v143.4" ] ],
+    [ "stepper1:B+", "uno:5", "green", [ "h-38.4", "v133.8" ] ],
+    [ "stepper1:B-", "uno:6", "green", [ "v-0.01", "h-48", "v124.2" ] ],
+    [ "temp1:DQ", "uno:9", "gold", [ "v0" ] ],
+    [ "temp1:GND", "uno:GND.2", "black", [ "v0" ] ],
+    [ "temp1:VCC", "uno:5V", "red", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}

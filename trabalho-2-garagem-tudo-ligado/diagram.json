@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-half", "id": "bb2", "top": 6.6, "left": -381.2, "attrs": {} },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0.6, "left": -739.8, "attrs": {} },
+    {
+      "type": "wokwi-analog-joystick",
+      "id": "joystick1",
+      "top": -202.2,
+      "left": -801,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -147.2,
+      "left": -13.6,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-ky-040",
+      "id": "encoder1",
+      "top": 349.4,
+      "left": -558.9,
+      "rotate": 270,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 86.3,
+      "left": -236.5,
+      "rotate": 90,
+      "attrs": { "color": "green", "xray": "1" }
+    },
+    { "type": "board-ds18b20", "id": "temp1", "top": 37.27, "left": -283.92, "attrs": {} },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1",
+      "top": 259.7,
+      "left": -194.7,
+      "rotate": 180,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo1",
+      "top": -260.2,
+      "left": -391.8,
+      "rotate": 270,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": -237.6,
+      "left": -430.2,
+      "attrs": { "volume": "0.1" }
+    },
+    {
+      "type": "wokwi-stepper-motor",
+      "id": "stepper1",
+      "top": -332.39,
+      "left": -661.97,
+      "attrs": { "size": "17" }
+    }
+  ],
+  "connections": [
+    [ "uno:GND.3", "bb2:bn.1", "black", [ "v57.5", "h176.8", "v-46.7" ] ],
+    [ "bb2:bn.25", "bb2:tn.25", "black", [ "v0" ] ],
+    [ "bz1:1", "bb2:tn.2", "black", [ "v96", "h48" ] ],
+    [ "uno:5V", "bb2:bp.1", "red", [ "v47.9", "h186.2", "v-47.1" ] ],
+    [ "bb2:bp.24", "bb2:tp.24", "red", [ "v0" ] ],
+    [ "lcd1:VCC", "bb2:tp.22", "red", [ "h0" ] ],
+    [ "lcd1:GND", "bb2:tn.21", "black", [ "h-19.2" ] ],
+    [ "encoder1:VCC", "bb2:bp.3", "red", [ "v-19.2", "h171.6" ] ],
+    [ "encoder1:GND", "bb2:bn.4", "black", [ "v-9.6", "h172" ] ],
+    [ "uno:3", "bz1:2", "red", [ "v0" ] ],
+    [ "lcd1:SDA", "uno:A5", "blue", [ "h-9.6", "v317", "h-465.1" ] ],
+    [ "uno:A4", "lcd1:SCL", "blue", [ "v38.3", "h465", "v-317.1" ] ],
+    [ "encoder1:DT", "uno:A2", "yellow", [ "h0" ] ],
+    [ "encoder1:SW", "uno:A3", "yellow", [ "h0" ] ],
+    [ "encoder1:CLK", "uno:7", "yellow", [ "v-19.2", "h-240", "v-249.6", "h217.2" ] ],
+    [ "joystick1:HORZ", "uno:A1", "violet", [ "v19.2", "h-124.8", "v278.4", "h226.5" ] ],
+    [ "joystick1:VERT", "uno:A0", "violet", [ "v9.6", "h-124.8", "v297.6", "h226.6" ] ],
+    [ "joystick1:GND", "bb2:tn.1", "black", [ "v57.6", "h249.6", "v67.3" ] ],
+    [ "joystick1:VCC", "bb2:tp.1", "red", [ "v76.8", "h297.6", "v28.5" ] ],
+    [ "bb2:9t.e", "bb2:bn.7", "black", [ "v0" ] ],
+    [ "bb2:11t.e", "bb2:bp.9", "red", [ "v0" ] ],
+    [ "uno:9", "bb2:10t.e", "limegreen", [ "v96", "h308" ] ],
+    [ "bb2:18t.b", "bb2:tn.15", "black", [ "v0" ] ],
+    [ "bb2:16t.b", "uno:8", "white", [ "v-86.4", "h-355.6" ] ],
+    [ "bb2:16b.i", "bb2:bp.13", "red", [ "v0" ] ],
+    [ "ultrasonic1:TRIG", "uno:11", "purple", [ "v-163.2", "h-673" ] ],
+    [ "ultrasonic1:ECHO", "uno:12", "purple", [ "v-172.8", "h-692.5" ] ],
+    [ "ultrasonic1:GND", "bb2:bn.21", "black", [ "v0" ] ],
+    [ "servo1:PWM", "uno:10", "orange", [ "v76.8", "h-288.5" ] ],
+    [ "servo1:GND", "bb2:tn.4", "black", [ "h0" ] ],
+    [ "bb2:tp.5", "servo1:V+", "red", [ "v0" ] ],
+    [ "stepper1:A-", "uno:2", "cyan", [ "v96", "h91.9" ] ],
+    [ "stepper1:A+", "uno:4", "cyan", [ "v105.6", "h63.3" ] ],
+    [ "stepper1:B+", "uno:5", "cyan", [ "v124.8", "h44.2" ] ],
+    [ "stepper1:B-", "uno:6", "cyan", [ "h-0.01", "v144", "h25.1" ] ],
+    [ "bb2:bp.23", "ultrasonic1:VCC", "red", [ "v0" ] ],
+    [ "btn1:1.l", "bb2:18t.c", "", [ "$bb" ] ],
+    [ "btn1:2.l", "bb2:16t.c", "", [ "$bb" ] ],
+    [ "btn1:1.r", "bb2:18b.h", "", [ "$bb" ] ],
+    [ "btn1:2.r", "bb2:16b.h", "", [ "$bb" ] ],
+    [ "temp1:GND", "bb2:9t.d", "", [ "$bb" ] ],
+    [ "temp1:DQ", "bb2:10t.d", "", [ "$bb" ] ],
+    [ "temp1:VCC", "bb2:11t.d", "", [ "$bb" ] ]
+  ],
+  "dependencies": {}
+}
