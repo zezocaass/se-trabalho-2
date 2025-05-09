@@ -1,9 +1,0 @@
-# Wokwi Library List
-# See https://docs.wokwi.com/guides/libraries
-
-DFRobot_RGBLCD1602
-Encoder
-Stepper
-LiquidCrystal I2C
-OneWire
-DallasTemperature
