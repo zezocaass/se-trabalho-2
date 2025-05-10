@@ -34,6 +34,16 @@ int encoderPos = 0;
 int lastCLKState;
 int lastSWState;
 
+byte encState = 0;
+int8_t encoderLUT[16] = {
+  0,   1, -1,  0,
+ -1,  0,  0,   1,
+  1,  0,  0,  -1,
+  0, -1,  1,   0
+};
+
+
+
 void setup() {
   Serial.begin(9600);
   lcd.init();
@@ -91,29 +101,31 @@ void updateDisplay() {
 }
 
 void handleEncoder() {
-  int currentCLKState = digitalRead(ENCODER_CLK);
-  int currentDTState  = digitalRead(ENCODER_DT);
-  int currentSWState  = digitalRead(ENCODER_SW);
+  // Lê CLK e DT atuais
+  byte currentState = (digitalRead(ENCODER_CLK) << 1) | digitalRead(ENCODER_DT);
 
-  if (currentCLKState != lastCLKState) {
-    if (currentDTState != currentCLKState) {
-      fanSpeed = constrain(fanSpeed + 1, 0, 100);
-    } else {
-      fanSpeed = constrain(fanSpeed - 1, 0, 100);
-    }
+  // Junta ao estado anterior (2 bits anteriores + 2 bits atuais)
+  encState = ((encState << 2) | currentState) & 0x0F;
+
+  int8_t movement = encoderLUT[encState];
+
+  if (movement != 0) {
+    fanSpeed = constrain(fanSpeed + movement, 0, 100);
     stepper.setSpeed(fanSpeed);
     Serial.print("Velocidade: ");
     Serial.println(fanSpeed);
-    delay(2);
   }
-  lastCLKState = currentCLKState;
 
+  // Botão do encoder
+  int currentSWState = digitalRead(ENCODER_SW);
   if (lastSWState == HIGH && currentSWState == LOW) {
     Serial.println("Botão do encoder pressionado!");
     delay(50);
   }
   lastSWState = currentSWState;
 }
+
+
 
 void handleFanControl() {
   if (temperatura > 27.0 && fanSpeed == 0) {
