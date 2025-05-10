@@ -1,13 +1,13 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#include <Encoder.h>
 #include <Stepper.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 #define JOY_X A1
 #define ENCODER_CLK 7
-#define ENCODER_DT A2
+#define ENCODER_DT  A2
+#define ENCODER_SW  A3
 
 #define STEP_A 2
 #define STEP_B 4
@@ -17,7 +17,6 @@
 #define DS18B20_PIN 9
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-Encoder myEnc(ENCODER_CLK, ENCODER_DT);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
 OneWire oneWire(DS18B20_PIN);
 DallasTemperature sensors(&oneWire);
@@ -25,20 +24,29 @@ DallasTemperature sensors(&oneWire);
 enum Menu { MENU_TEMP, MENU_SPEED };
 Menu currentMenu = MENU_TEMP;
 
-int fanSpeed = 0;           
-float lastEncPos = 0;       // posição anterior do encoder
+int fanSpeed = 0;
 float temperatura = 0.0;
 
 unsigned long lastTempRead = 0;
-const unsigned long tempInterval = 1000; // 1 segundo
+const unsigned long tempInterval = 1000;
+
+int encoderPos = 0;
+int lastCLKState;
+int lastSWState;
 
 void setup() {
   Serial.begin(9600);
   lcd.init();
   lcd.backlight();
   sensors.begin();
-  myEnc.write(0);
   stepper.setSpeed(fanSpeed);
+
+  pinMode(ENCODER_CLK, INPUT_PULLUP);
+  pinMode(ENCODER_DT, INPUT_PULLUP);
+  pinMode(ENCODER_SW, INPUT_PULLUP);
+
+  lastCLKState = digitalRead(ENCODER_CLK);
+  lastSWState = digitalRead(ENCODER_SW);
 }
 
 void loop() {
@@ -73,52 +81,52 @@ void updateDisplay() {
     lcd.print(temperatura, 1);
     lcd.print(" C");
   } else if (currentMenu == MENU_SPEED) {
-    handleEncoder(); // só ativa o encoder aqui!
+    handleEncoder();
     lcd.setCursor(0,0);
-    lcd.print("Velocidade:");
+    lcd.print("Velocidade:    ");
     lcd.setCursor(0,1);
     lcd.print(fanSpeed);
-    lcd.print(" RPM");
+    lcd.print(" RPM      ");
   }
 }
 
 void handleEncoder() {
-  float encPos = myEnc.read() / 4.0;
-  float delta = encPos - lastEncPos;
-  static float stepAccumulator = 0;
+  int currentCLKState = digitalRead(ENCODER_CLK);
+  int currentDTState  = digitalRead(ENCODER_DT);
+  int currentSWState  = digitalRead(ENCODER_SW);
 
-  if (delta != 0) {
-    stepAccumulator += delta;
-    lastEncPos = encPos;
-
-    while (stepAccumulator >= 1.0) {
+  if (currentCLKState != lastCLKState) {
+    if (currentDTState != currentCLKState) {
       fanSpeed = constrain(fanSpeed + 1, 0, 100);
-      stepAccumulator -= 1.0;
-    }
-
-    while (stepAccumulator <= -1.0) {
+    } else {
       fanSpeed = constrain(fanSpeed - 1, 0, 100);
-      stepAccumulator += 1.0;
     }
-
     stepper.setSpeed(fanSpeed);
+    Serial.print("Velocidade: ");
+    Serial.println(fanSpeed);
+    delay(2);
   }
+  lastCLKState = currentCLKState;
+
+  if (lastSWState == HIGH && currentSWState == LOW) {
+    Serial.println("Botão do encoder pressionado!");
+    delay(50);
+  }
+  lastSWState = currentSWState;
 }
 
-
 void handleFanControl() {
-  // Se temperatura > 27°C, força velocidade mínima
   if (temperatura > 27.0 && fanSpeed == 0) {
     fanSpeed = 10;
     stepper.setSpeed(fanSpeed);
   }
 
   if (temperatura < 26.0 && fanSpeed == 10) {
-  fanSpeed = 0;
-  stepper.setSpeed(fanSpeed);
-}
+    fanSpeed = 0;
+    stepper.setSpeed(fanSpeed);
+  }
 
   if (fanSpeed > 0) {
-    stepper.step(10); // mantém o motor rodando
+    stepper.step(10);
   }
 }
