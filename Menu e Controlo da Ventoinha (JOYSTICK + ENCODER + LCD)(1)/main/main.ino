@@ -33,11 +33,15 @@ void setup() {
 
 void loop() {
   readTemperature();
+  handleJoystick();
   updateDisplay();
    if (currentMode == AUTO) {
     if (temperatura > TEMP_THRESHOLD) {
       stepper.step(2048); // aumenta a quantidade dos Steps dados pelo motor
     }
+  }
+  else if (currentMode == MANUAL) {
+  // No modo manual, motor parado (sem controle por sensor)
   }
   delay(200);
 }
@@ -53,13 +57,12 @@ void readTemperature() {
 
 void handleJoystick() {
   int joyX = analogRead(JOY_X);
-  if (joyX > 800) {
-    currentMode = MANUAL;
-  } else if (joyX < 200) {
-    currentMode = AUTO;
+  if (joyX < 200) {
+    currentMode = MANUAL;   // Joystick para a direita (no caso para cima)
+  } else if (joyX > 800) {
+    currentMode = AUTO;     // Joystick para a esquerda (no caso para baixo)
   }
 }
-
 void updateDisplay() {
   lcd.setCursor(0,0);
   if (currentMode == AUTO) {
