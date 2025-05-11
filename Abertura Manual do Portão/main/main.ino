@@ -9,12 +9,13 @@
 
 Servo gateServo;
 int lastEncoderCLK = 0;
+int currentPos = SERVO_CLOSED;
 
 void setup() {
   pinMode(ENCODER_CLK, INPUT_PULLUP);
   pinMode(ENCODER_DT, INPUT_PULLUP);
   gateServo.attach(SERVO_PIN);
-  gateServo.write(SERVO_CLOSED); 
+  gateServo.write(currentPos);
   lastEncoderCLK = digitalRead(ENCODER_CLK);
 }
 
@@ -23,13 +24,27 @@ void loop() {
   if (currentCLK != lastEncoderCLK && currentCLK == LOW) {
     int dtValue = digitalRead(ENCODER_DT);
     if (dtValue == HIGH) {
-      // Gira para um lado: abre totalmente
-      gateServo.write(SERVO_OPEN);
+      abrirCancela();
     } else {
-      // Gira para o outro lado: fecha totalmente
-      gateServo.write(SERVO_CLOSED);
+      fecharCancela();
     }
-    delay(200);
+    delay(200); // Debounce
   }
   lastEncoderCLK = currentCLK;
+}
+
+void abrirCancela() {
+  for (int pos = currentPos; pos <= SERVO_OPEN; pos++) {
+    gateServo.write(pos);
+    delay(10); //Aumentar o delay para que o servo abra mais lentamente
+  }
+  currentPos = SERVO_OPEN;
+}
+
+void fecharCancela() {
+  for (int pos = currentPos; pos >= SERVO_CLOSED; pos--) {
+    gateServo.write(pos);
+    delay(10); //Aumentar o delay para que o servo feche mais lentamente
+  }
+  currentPos = SERVO_CLOSED;
 }
