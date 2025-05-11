@@ -28,12 +28,14 @@ void loop() {
   Serial.print("Temperatura: ");
   Serial.print(temp);
   Serial.println(" °C");
-
+  
   if (temp > TEMP_THRESHOLD) {
-    digitalWrite(BUZZER_PIN, HIGH);
-    stepper.step(100); // Gira ventoinha
+    tone(BUZZER_PIN, 2000);         // Liga buzzer
+    stepper.step(100);              // Gira ventoinha
   } else {
-    digitalWrite(BUZZER_PIN, LOW);
+    noTone(BUZZER_PIN);             // Desliga buzzer
   }
+  
+
   delay(1000);
 }
