@@ -1,21 +1,35 @@
 #include <Servo.h>
 
-#define PUSH_BUTTON 8
+#define ENCODER_CLK 7
+#define ENCODER_DT  A2
 #define SERVO_PIN 10
 
+#define SERVO_OPEN 90
+#define SERVO_CLOSED 0
+
 Servo gateServo;
+int lastEncoderCLK = 0;
 
 void setup() {
-  pinMode(PUSH_BUTTON, INPUT_PULLUP);
+  pinMode(ENCODER_CLK, INPUT_PULLUP);
+  pinMode(ENCODER_DT, INPUT_PULLUP);
   gateServo.attach(SERVO_PIN);
-  gateServo.write(0); // Portão fechado inicialmente
+  gateServo.write(SERVO_CLOSED); 
+  lastEncoderCLK = digitalRead(ENCODER_CLK);
 }
 
 void loop() {
-  if (digitalRead(PUSH_BUTTON) == LOW) {
-    gateServo.write(90); // Abre portão
-  } else {
-    gateServo.write(0);  // Fecha portão
+  int currentCLK = digitalRead(ENCODER_CLK);
+  if (currentCLK != lastEncoderCLK && currentCLK == LOW) {
+    int dtValue = digitalRead(ENCODER_DT);
+    if (dtValue == HIGH) {
+      // Gira para um lado: abre totalmente
+      gateServo.write(SERVO_OPEN);
+    } else {
+      // Gira para o outro lado: fecha totalmente
+      gateServo.write(SERVO_CLOSED);
+    }
+    delay(200);
   }
-  delay(100);
+  lastEncoderCLK = currentCLK;
 }
