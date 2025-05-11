@@ -9,6 +9,7 @@
 #define STEP_B 4
 #define STEP_C 5
 #define STEP_D 6
+#define JOY_X A1  // Pino do eixo X do joystick
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
@@ -17,6 +18,10 @@ DallasTemperature sensors(&oneWire);
 
 const float TEMP_THRESHOLD = 28.0;
 float temperatura = 0.0;
+
+//Modos da ventoinha
+enum Mode { AUTO, MANUAL };
+Mode currentMode = AUTO;
 
 void setup() {
   Serial.begin(9600);
@@ -29,25 +34,41 @@ void setup() {
 void loop() {
   readTemperature();
   updateDisplay();
-  delay(1000); 
+   if (currentMode == AUTO) {
+    if (temperatura > TEMP_THRESHOLD) {
+      stepper.step(2048); // aumenta a quantidade dos Steps dados pelo motor
+    }
+  }
+  delay(200);
 }
 
 void readTemperature() {
   sensors.requestTemperatures();
   temperatura = sensors.getTempCByIndex(0);
+  //Print na consola da temperatura
   Serial.print("Temperatura: ");
   Serial.print(temperatura);
   Serial.println(" °C");
+}
 
-  if (temperatura > TEMP_THRESHOLD) {
-    stepper.step(2048); //Aumenta a quantidade de Steps dados pelo motor (parece mais ventoinha)
+void handleJoystick() {
+  int joyX = analogRead(JOY_X);
+  if (joyX > 800) {
+    currentMode = MANUAL;
+  } else if (joyX < 200) {
+    currentMode = AUTO;
   }
 }
 
 void updateDisplay() {
   lcd.setCursor(0,0);
-  lcd.print("Temperatura:   ");
+  if (currentMode == AUTO) {
+    lcd.print("Modo: Auto     ");
+  } else {
+    lcd.print("Modo: Manual   ");
+  }
   lcd.setCursor(0,1);
+  lcd.print("Temp: ");
   lcd.print(temperatura, 1);
-  lcd.print(" C      ");
+  lcd.print(" C     ");
 }
