@@ -10,6 +10,8 @@
 #define STEP_C 5
 #define STEP_D 6
 #define JOY_X A1  // Pino do eixo X do joystick
+#define BUTTON_PIN 8
+
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
@@ -29,6 +31,8 @@ void setup() {
   lcd.backlight();
   sensors.begin();
   stepper.setSpeed(10); //Aumenta a velocidade dos Steps dados pelo motor
+  pinMode(BUTTON_PIN, INPUT_PULLUP); // Usa resistor pull-up interno
+
 }
 
 void loop() {
@@ -57,12 +61,17 @@ void readTemperature() {
 
 void handleJoystick() {
   int joyX = analogRead(JOY_X);
-  if (joyX < 200) {
-    currentMode = MANUAL;   // Joystick para a direita (no caso para cima)
+  bool buttonPressed = digitalRead(BUTTON_PIN) == LOW; // LOW quando pressionado
+
+  if (buttonPressed) {
+    currentMode = MANUAL;   //Botão que ativa o modo Manual
+  } else if (joyX < 200) {
+    currentMode = MANUAL;   // Joystick para a direita
   } else if (joyX > 800) {
-    currentMode = AUTO;     // Joystick para a esquerda (no caso para baixo)
+    currentMode = AUTO;     // Joystick para a esquerda
   }
 }
+
 void updateDisplay() {
   lcd.setCursor(0,0);
   if (currentMode == AUTO) {
