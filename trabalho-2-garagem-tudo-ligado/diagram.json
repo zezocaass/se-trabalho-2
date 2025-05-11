@@ -78,8 +78,6 @@
     [ "encoder1:VCC", "bb2:bp.3", "red", [ "v-19.2", "h171.6" ] ],
     [ "encoder1:GND", "bb2:bn.4", "black", [ "v-9.6", "h172" ] ],
     [ "uno:3", "bz1:2", "red", [ "v0" ] ],
-    [ "lcd1:SDA", "uno:A5", "blue", [ "h-9.6", "v317", "h-465.1" ] ],
-    [ "uno:A4", "lcd1:SCL", "blue", [ "v38.3", "h465", "v-317.1" ] ],
     [ "encoder1:DT", "uno:A2", "yellow", [ "h0" ] ],
     [ "encoder1:SW", "uno:A3", "yellow", [ "h0" ] ],
     [ "encoder1:CLK", "uno:7", "yellow", [ "v-19.2", "h-240", "v-249.6", "h217.2" ] ],
@@ -109,7 +107,9 @@
     [ "btn1:2.l", "bb2:18b.h", "", [ "$bb" ] ],
     [ "btn1:1.r", "bb2:16t.c", "", [ "$bb" ] ],
     [ "btn1:2.r", "bb2:18t.c", "", [ "$bb" ] ],
-    [ "bb2:18b.i", "bb2:bn.15", "black", [ "v0" ] ]
+    [ "bb2:18b.i", "bb2:bn.15", "black", [ "v0" ] ],
+    [ "lcd1:SDA", "uno:A4", "green", [ "h-38.4", "v317", "h-441.6" ] ],
+    [ "lcd1:SCL", "uno:A5", "green", [ "h-28.8", "v317.1", "h-451.2" ] ]
   ],
   "dependencies": {}
 }
