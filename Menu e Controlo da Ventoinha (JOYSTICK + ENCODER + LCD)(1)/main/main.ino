@@ -23,7 +23,7 @@ void setup() {
   lcd.init();
   lcd.backlight();
   sensors.begin();
-  stepper.setSpeed(10);
+  stepper.setSpeed(10); //Aumenta a velocidade dos Steps dados pelo motor
 }
 
 void loop() {
@@ -40,7 +40,7 @@ void readTemperature() {
   Serial.println(" °C");
 
   if (temperatura > TEMP_THRESHOLD) {
-    stepper.step(100);
+    stepper.step(2048); //Aumenta a quantidade de Steps dados pelo motor (parece mais ventoinha)
   }
 }
 
