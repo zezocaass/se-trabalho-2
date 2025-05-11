@@ -41,7 +41,7 @@ void loop() {
     }
   }
   else if (currentMode == MANUAL) {
-  // No modo manual, motor parado (sem controle por sensor)
+    stepper.step(2048); //Força a ligar mesmo que a temperatura seja baixa
   }
   delay(200);
 }
