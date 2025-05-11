@@ -14,14 +14,6 @@
       "attrs": {}
     },
     {
-      "type": "wokwi-ky-040",
-      "id": "encoder1",
-      "top": 339.8,
-      "left": 372.3,
-      "rotate": 270,
-      "attrs": {}
-    },
-    {
       "type": "wokwi-lcd1602",
       "id": "lcd1",
       "top": 227.2,
@@ -36,22 +28,25 @@
       "rotate": 270,
       "attrs": { "size": "17" }
     },
-    { "type": "board-ds18b20", "id": "temp1", "top": -106.73, "left": 100.08, "attrs": {} }
+    { "type": "board-ds18b20", "id": "temp1", "top": -106.73, "left": 100.08, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 76.9,
+      "left": 6.3,
+      "rotate": 270,
+      "attrs": { "color": "green", "xray": "1" }
+    }
   ],
   "connections": [
     [ "lcd1:SDA", "uno:A4", "green", [ "h0" ] ],
     [ "lcd1:SCL", "uno:A5", "green", [ "h0" ] ],
-    [ "encoder1:CLK", "uno:7", "blue", [ "v-9.6", "h76.8", "v-307.2", "h-99.6" ] ],
-    [ "encoder1:DT", "uno:A2", "blue", [ "v0" ] ],
-    [ "encoder1:SW", "uno:A3", "blue", [ "v0" ] ],
     [ "joystick1:VERT", "uno:A0", "violet", [ "h230.4", "v-95.9" ] ],
     [ "joystick1:HORZ", "uno:A1", "violet", [ "h240", "v-86.3" ] ],
     [ "uno:GND.2", "bb1:bn.25", "black", [ "v9.5", "h-228.1" ] ],
     [ "uno:5V", "bb1:bp.25", "red", [ "v0" ] ],
     [ "joystick1:GND", "bb1:bn.24", "black", [ "h28.8", "v-48", "h-68.8" ] ],
     [ "joystick1:VCC", "bb1:bp.23", "red", [ "h9.6", "v-76.8", "h-59.2" ] ],
-    [ "bb1:bp.15", "encoder1:VCC", "red", [ "v152.7", "h356.8", "v-38.4", "h57.2" ] ],
-    [ "encoder1:GND", "bb1:bn.14", "black", [ "v-48", "h-200.8", "v76.8", "h-232" ] ],
     [ "lcd1:VCC", "bb1:bp.13", "red", [ "h-19.2", "v172.9", "h-489.6", "v-9.6" ] ],
     [ "lcd1:GND", "bb1:bn.12", "black", [ "h-9.6", "v192", "h-508.8", "v-9.6" ] ],
     [ "stepper1:A-", "uno:2", "green", [ "h0" ] ],
@@ -60,7 +55,13 @@
     [ "stepper1:B-", "uno:6", "green", [ "h0" ] ],
     [ "temp1:DQ", "uno:9", "gold", [ "v19.2", "h240", "v9.6" ] ],
     [ "temp1:GND", "bb1:tn.22", "black", [ "v0" ] ],
-    [ "temp1:VCC", "bb1:tp.24", "red", [ "v0" ] ]
+    [ "temp1:VCC", "bb1:tp.24", "red", [ "v0" ] ],
+    [ "btn1:1.l", "bb1:19b.h", "", [ "$bb" ] ],
+    [ "btn1:2.l", "bb1:21b.h", "", [ "$bb" ] ],
+    [ "btn1:1.r", "bb1:19t.c", "", [ "$bb" ] ],
+    [ "btn1:2.r", "bb1:21t.c", "", [ "$bb" ] ],
+    [ "btn1:1.r", "uno:8", "cyan", [ "v-86.6", "h336" ] ],
+    [ "bb1:21b.i", "bb1:bn.17", "black", [ "v0" ] ]
   ],
   "dependencies": {}
 }
