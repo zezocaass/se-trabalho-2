@@ -73,7 +73,7 @@ void loop() {
 
 void readTemperature() {
   sensors.requestTemperatures();
-  float temperatura = sensors.getTempCByIndex(0);
+  temperatura = sensors.getTempCByIndex(0);
   lastTempRead = millis();
   Serial.print("Temperatura: ");
   Serial.print(temperatura);
