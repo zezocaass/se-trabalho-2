@@ -34,6 +34,8 @@ int encoderPos = 0;
 int lastCLKState;
 int lastSWState;
 
+const float TEMP_THRESHOLD = 28.0;
+
 byte encState = 0;
 int8_t encoderLUT[16] = {
   0,   1, -1,  0,
@@ -49,7 +51,7 @@ void setup() {
   lcd.init();
   lcd.backlight();
   sensors.begin();
-  stepper.setSpeed(fanSpeed);
+  stepper.setSpeed(10); // RPM
 
   pinMode(ENCODER_CLK, INPUT_PULLUP);
   pinMode(ENCODER_DT, INPUT_PULLUP);
@@ -70,11 +72,17 @@ void loop() {
 // ========================== Funções ==========================
 
 void readTemperature() {
-  if (millis() - lastTempRead >= tempInterval) {
-    sensors.requestTemperatures();
-    temperatura = sensors.getTempCByIndex(0);
-    lastTempRead = millis();
+  sensors.requestTemperatures();
+  float temperatura = sensors.getTempCByIndex(0);
+  lastTempRead = millis();
+  Serial.print("Temperatura: ");
+  Serial.print(temperatura);
+  Serial.println(" °C");
+
+  if (temperatura > TEMP_THRESHOLD) {
+    stepper.step(100); // Gira ventoinha
   }
+  delay(1000);
 }
 
 void handleJoystick() {
