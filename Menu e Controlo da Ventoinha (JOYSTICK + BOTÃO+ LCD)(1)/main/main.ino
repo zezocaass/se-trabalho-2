@@ -11,7 +11,7 @@
 #define STEP_D 6
 #define JOY_X A1  // Pino do eixo X do joystick
 #define BUTTON_PIN 8
-
+#define BUZZER_PIN 3 // <--- Define o pino do buzzer
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
@@ -32,20 +32,24 @@ void setup() {
   sensors.begin();
   stepper.setSpeed(10); //Aumenta a velocidade dos Steps dados pelo motor
   pinMode(BUTTON_PIN, INPUT_PULLUP); // Usa resistor pull-up interno
-
+  pinMode(BUZZER_PIN, OUTPUT);       // <--- Inicializa o pino do buzzer
 }
 
 void loop() {
   readTemperature();
   handleJoystick();
   updateDisplay();
-   if (currentMode == AUTO) {
+  if (currentMode == AUTO) {
     if (temperatura > TEMP_THRESHOLD) {
-      stepper.step(2048); // aumenta a quantidade dos Steps dados pelo motor
+      tone(BUZZER_PIN, 2000);     // Liga o Buzzer
+      stepper.step(2048);         // aumenta a quantidade dos Steps dados pelo motor
+    } else {
+      noTone(BUZZER_PIN);         // Desliga o buzzer
     }
   }
   else if (currentMode == MANUAL) {
-    stepper.step(2048); //Força a ligar mesmo que a temperatura seja baixa
+    noTone(BUZZER_PIN);           // Força o Buzzer Desligado no modo Manual
+    stepper.step(2048);           //Força a ligar mesmo que a temperatura seja baixa
   }
   delay(200);
 }
