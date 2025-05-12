@@ -3,20 +3,30 @@
 #include <Stepper.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Servo.h> // <--- Adicionado para o servo
 
 #define DS18B20_PIN 9
 #define STEP_A 2
 #define STEP_B 4
 #define STEP_C 5
 #define STEP_D 6
-#define JOY_X A1  // Pino do eixo X do joystick
+#define JOY_X A1
 #define BUTTON_PIN 8
-#define BUZZER_PIN 3 // <--- Define o pino do buzzer
+#define BUZZER_PIN 3
+
+// --- PORTÃO AUTOMÁTICO ---
+#define TRIG_PIN 11
+#define ECHO_PIN 12
+#define SERVO_PIN 10
+#define SERVO_OPEN 90
+#define SERVO_CLOSED 0
+const int DISTANCE_THRESHOLD = 30; // distância para abrir portão
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
 OneWire oneWire(DS18B20_PIN);
 DallasTemperature sensors(&oneWire);
+Servo gateServo; // <--- Servo do portão
 
 const float TEMP_THRESHOLD = 28.0;
 float temperatura = 0.0;
@@ -25,39 +35,91 @@ float temperatura = 0.0;
 enum Mode { AUTO, MANUAL };
 Mode currentMode = AUTO;
 
+int currentGatePos = SERVO_CLOSED;
+
 void setup() {
   Serial.begin(9600);
   lcd.init();
   lcd.backlight();
   sensors.begin();
-  stepper.setSpeed(10); //Aumenta a velocidade dos Steps dados pelo motor
-  pinMode(BUTTON_PIN, INPUT_PULLUP); // Usa resistor pull-up interno
-  pinMode(BUZZER_PIN, OUTPUT);       // <--- Inicializa o pino do buzzer
+  stepper.setSpeed(10);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  // --- PORTÃO AUTOMÁTICO ---
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  gateServo.attach(SERVO_PIN);
+  gateServo.write(currentGatePos); // Portão fechado inicialmente
 }
 
 void loop() {
   readTemperature();
   handleJoystick();
   updateDisplay();
+
+  // --- BLOCO PORTÃO AUTOMÁTICO ---
+  controlarPortaoPorProximidade();
+
+  // --- RESTANTE FUNCIONALIDADE ---
   if (currentMode == AUTO) {
     if (temperatura > TEMP_THRESHOLD) {
-      tone(BUZZER_PIN, 2000);     // Liga o Buzzer
-      stepper.step(2048);         // aumenta a quantidade dos Steps dados pelo motor
+      tone(BUZZER_PIN, 2000);
+      stepper.step(2048);
     } else {
-      noTone(BUZZER_PIN);         // Desliga o buzzer
+      noTone(BUZZER_PIN);
     }
   }
   else if (currentMode == MANUAL) {
-    noTone(BUZZER_PIN);           // Força o Buzzer Desligado no modo Manual
-    stepper.step(2048);           //Força a ligar mesmo que a temperatura seja baixa
+    noTone(BUZZER_PIN);
+    stepper.step(2048);
   }
   delay(200);
+}
+
+void controlarPortaoPorProximidade() {
+  long distance = readDistance();
+  Serial.print("Distancia: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  if (distance > 0 && distance < DISTANCE_THRESHOLD && currentGatePos != SERVO_OPEN) {
+    abrirPortao();
+  } else if (distance >= DISTANCE_THRESHOLD && currentGatePos != SERVO_CLOSED) {
+    fecharPortao();
+  }
+}
+
+long readDistance() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  long duration = pulseIn(ECHO_PIN, HIGH, 20000);
+  long distance = duration * 0.034 / 2;
+  return distance;
+}
+
+void abrirPortao() {
+  for (int pos = currentGatePos; pos <= SERVO_OPEN; pos++) {
+    gateServo.write(pos);
+    delay(10);
+  }
+  currentGatePos = SERVO_OPEN;
+}
+
+void fecharPortao() {
+  for (int pos = currentGatePos; pos >= SERVO_CLOSED; pos--) {
+    gateServo.write(pos);
+    delay(10);
+  }
+  currentGatePos = SERVO_CLOSED;
 }
 
 void readTemperature() {
   sensors.requestTemperatures();
   temperatura = sensors.getTempCByIndex(0);
-  //Print na consola da temperatura
   Serial.print("Temperatura: ");
   Serial.print(temperatura);
   Serial.println(" °C");
@@ -65,14 +127,14 @@ void readTemperature() {
 
 void handleJoystick() {
   int joyX = analogRead(JOY_X);
-  bool buttonPressed = digitalRead(BUTTON_PIN) == LOW; // LOW quando pressionado
+  bool buttonPressed = digitalRead(BUTTON_PIN) == LOW;
 
   if (buttonPressed) {
-    currentMode = MANUAL;   //Botão que ativa o modo Manual
+    currentMode = MANUAL;
   } else if (joyX < 200) {
-    currentMode = MANUAL;   // Joystick para a direita
+    currentMode = MANUAL;
   } else if (joyX > 800) {
-    currentMode = AUTO;     // Joystick para a esquerda
+    currentMode = AUTO;
   }
 }
 
