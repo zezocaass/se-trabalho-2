@@ -3,7 +3,7 @@
 #include <Stepper.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Servo.h> // <--- Adicionado para o servo
+#include <Servo.h> 
 
 #define DS18B20_PIN 9
 #define STEP_A 2
@@ -14,21 +14,20 @@
 #define BUTTON_PIN 8
 #define BUZZER_PIN 3
 
-// --- PORTÃO AUTOMÁTICO ---
 #define TRIG_PIN 11
 #define ECHO_PIN 12
 #define SERVO_PIN 10
 #define SERVO_OPEN 90
 #define SERVO_CLOSED 0
-const int DISTANCE_THRESHOLD = 30; // distância para abrir portão
+const int DISTANCE_THRESHOLD = 10; // distância para abrir portão
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
 OneWire oneWire(DS18B20_PIN);
 DallasTemperature sensors(&oneWire);
-Servo gateServo; // <--- Servo do portão
+Servo gateServo; 
 
-const float TEMP_THRESHOLD = 28.0;
+const float TEMP_THRESHOLD = 24.0;
 float temperatura = 0.0;
 
 //Modos da ventoinha
@@ -46,7 +45,6 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(BUZZER_PIN, OUTPUT);
 
-  // --- PORTÃO AUTOMÁTICO ---
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   gateServo.attach(SERVO_PIN);
@@ -58,10 +56,8 @@ void loop() {
   handleJoystick();
   updateDisplay();
 
-  // --- BLOCO PORTÃO AUTOMÁTICO ---
   controlarPortaoPorProximidade();
 
-  // --- RESTANTE FUNCIONALIDADE ---
   if (currentMode == AUTO) {
     if (temperatura > TEMP_THRESHOLD) {
       tone(BUZZER_PIN, 2000);
