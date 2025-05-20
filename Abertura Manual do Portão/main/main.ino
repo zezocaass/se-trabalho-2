@@ -12,23 +12,73 @@
 const int DISTANCE_THRESHOLD = 30; // cm para abrir portão
 
 Servo gateServo;
-int lastEncoderCLK = 0;
+
+// Variáveis do encoder
+int lastEncoderCLK = HIGH;
 int currentPos = SERVO_CLOSED;
 
-// Variável para bloquear o ultrassónico após uso manual
+// Variáveis de temporização
 unsigned long manualOverrideUntil = 0;
-const unsigned long overrideDuration = 5000; // 5 segundos
+const unsigned long overrideDuration = 5000; // 5 segundos de override
 
 void setup() {
   Serial.begin(9600);
+  
+  // Configura encoder
   pinMode(ENCODER_CLK, INPUT_PULLUP);
   pinMode(ENCODER_DT, INPUT_PULLUP);
+  
+  // Configura servo
   gateServo.attach(SERVO_PIN);
   gateServo.write(currentPos);
-  lastEncoderCLK = digitalRead(ENCODER_CLK);
-
+  
+  // Configura sensor ultrassónico
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+}
+
+void loop() {
+  // 1. Verifica encoder para controlo manual
+  handleEncoder();
+  
+  // 2. Se não estiver em override manual, verifica sensor
+  if (millis() > manualOverrideUntil) {
+    handleUltrasonic();
+  }
+  
+  delay(50); // Delay geral para estabilidade
+}
+
+void handleEncoder() {
+  int newCLK = digitalRead(ENCODER_CLK);
+  
+  // Deteta mudança no encoder
+  if (newCLK != lastEncoderCLK && newCLK == LOW) {
+    int dtState = digitalRead(ENCODER_DT);
+    
+    if (dtState == HIGH) {
+      abrirCancela();
+    } else {
+      fecharCancela();
+    }
+    
+    manualOverrideUntil = millis() + overrideDuration;
+    Serial.println("Modo Manual Ativo!");
+  }
+  lastEncoderCLK = newCLK;
+}
+
+void handleUltrasonic() {
+  long distance = readDistance();
+  Serial.print("Distancia: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  if (distance > 0 && distance < DISTANCE_THRESHOLD && currentPos != SERVO_OPEN) {
+    abrirCancela();
+  } else if (distance >= DISTANCE_THRESHOLD && currentPos != SERVO_CLOSED) {
+    fecharCancela();
+  }
 }
 
 long readDistance() {
@@ -37,45 +87,15 @@ long readDistance() {
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
+  
   long duration = pulseIn(ECHO_PIN, HIGH);
-  long distance = duration * 0.034 / 2;
-  return distance;
-}
-
-void loop() {
-  int currentCLK = digitalRead(ENCODER_CLK);
-  if (currentCLK != lastEncoderCLK && currentCLK == LOW) {
-    int dtValue = digitalRead(ENCODER_DT);
-    if (dtValue == HIGH) {
-      abrirCancela();
-    } else {
-      fecharCancela();
-    }
-    manualOverrideUntil = millis() + overrideDuration; // Bloqueia ultrassónico por 5 segundos para evitar que feche sozinho
-    delay(200); // Debounce
-  }
-  lastEncoderCLK = currentCLK;
-
-  if (millis() > manualOverrideUntil) {
-    long distance = readDistance();
-    Serial.print("Distancia: ");
-    Serial.print(distance);
-    Serial.println(" cm");
-
-    if (distance > 0 && distance < DISTANCE_THRESHOLD && currentPos != SERVO_OPEN) {
-      abrirCancela();
-    } else if (distance >= DISTANCE_THRESHOLD && currentPos != SERVO_CLOSED) {
-      fecharCancela();
-    }
-  }
-
-  delay(100); // Pequeno delay para estabilidade
+  return duration * 0.034 / 2;
 }
 
 void abrirCancela() {
   for (int pos = currentPos; pos <= SERVO_OPEN; pos++) {
     gateServo.write(pos);
-    delay(10); //Aumentar o delay para que o servo abra mais lentamente
+    delay(15);
   }
   currentPos = SERVO_OPEN;
 }
@@ -83,7 +103,7 @@ void abrirCancela() {
 void fecharCancela() {
   for (int pos = currentPos; pos >= SERVO_CLOSED; pos--) {
     gateServo.write(pos);
-    delay(10); //Aumentar o delay para que o servo feche mais lentamente
+    delay(15);
   }
   currentPos = SERVO_CLOSED;
 }
