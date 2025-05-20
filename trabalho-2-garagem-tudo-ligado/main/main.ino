@@ -5,6 +5,7 @@
 #include <DallasTemperature.h>
 #include <Servo.h>
 
+//         Definições
 #define DS18B20_PIN 9
 #define STEP_A 2
 #define STEP_B 4
@@ -19,12 +20,13 @@
 #define SERVO_PIN 10
 #define SERVO_OPEN 90
 #define SERVO_CLOSED 0
-const int DISTANCE_THRESHOLD = 10; // distância para abrir portão
+const int DISTANCE_THRESHOLD = 10; // distância para abrir portão (alterar em caso de necessidade)
 
 // Encoder
 #define ENCODER_CLK 7
 #define ENCODER_DT  A2
 
+//   Objetos Globais e Variáveis
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
 OneWire oneWire(DS18B20_PIN);
@@ -41,8 +43,9 @@ int currentGatePos = SERVO_CLOSED;
 
 int lastEncoderCLK = HIGH;
 unsigned long manualOverrideUntil = 0;
-const unsigned long overrideDuration = 5000; // 5 segundos
+const unsigned long overrideDuration = 5000; // 5 segundos (define o tempo que a abertura manual fica ativa)
 
+//           Setup
 void setup() {
   Serial.begin(9600);
   lcd.init();
@@ -63,6 +66,7 @@ void setup() {
   lastEncoderCLK = digitalRead(ENCODER_CLK);
 }
 
+//           Loop
 void loop() {
   readTemperature();
   handleJoystick();
@@ -88,6 +92,7 @@ void loop() {
   delay(50);
 }
 
+//      Função: Encoder
 void handleEncoder() {
   static int lastCLK = HIGH;
   static unsigned long lastDebounceTime = 0;
@@ -113,7 +118,7 @@ void handleEncoder() {
   lastCLK = currentCLK;
 }
 
-
+//   Função: Portão Automático
 void controlarPortaoPorProximidade() {
   long distance = readDistance();
   Serial.print("Distancia: ");
@@ -127,6 +132,7 @@ void controlarPortaoPorProximidade() {
   }
 }
 
+//      Função: Distância
 long readDistance() {
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
@@ -138,6 +144,7 @@ long readDistance() {
   return distance;
 }
 
+//  Funções: Abrir/Fechar Portão
 void abrirPortao() {
   for (int pos = currentGatePos; pos <= SERVO_OPEN; pos++) {
     gateServo.write(pos);
@@ -154,6 +161,7 @@ void fecharPortao() {
   currentGatePos = SERVO_CLOSED;
 }
 
+//    Função: Temperatura
 void readTemperature() {
   sensors.requestTemperatures();
   temperatura = sensors.getTempCByIndex(0);
@@ -162,6 +170,7 @@ void readTemperature() {
   Serial.println(" °C");
 }
 
+//    Função: Joystick/Modo
 void handleJoystick() {
   int joyX = analogRead(JOY_X);
   bool buttonPressed = digitalRead(BUTTON_PIN) == LOW;
@@ -175,6 +184,7 @@ void handleJoystick() {
   }
 }
 
+//      Função: Display LCD
 void updateDisplay() {
   lcd.setCursor(0,0);
   if (currentMode == AUTO) {
