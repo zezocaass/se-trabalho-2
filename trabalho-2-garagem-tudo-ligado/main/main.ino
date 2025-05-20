@@ -89,22 +89,30 @@ void loop() {
 }
 
 void handleEncoder() {
+  static int lastCLK = HIGH;
+  static unsigned long lastDebounceTime = 0;
+  const unsigned long debounceDelay = 3; 
+
   int currentCLK = digitalRead(ENCODER_CLK);
 
-  // Deteta transição (queda) do CLK
-  if (lastEncoderCLK == HIGH && currentCLK == LOW) {
-    int dtValue = digitalRead(ENCODER_DT);
-    if (dtValue == HIGH && currentGatePos != SERVO_OPEN) {
-      abrirPortao();
-      manualOverrideUntil = millis() + overrideDuration;
-    } else if (dtValue == LOW && currentGatePos != SERVO_CLOSED) {
-      fecharPortao();
-      manualOverrideUntil = millis() + overrideDuration;
+  if (lastCLK == HIGH && currentCLK == LOW) {
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+      int dtValue = digitalRead(ENCODER_DT);
+      if (dtValue == HIGH && currentGatePos != SERVO_OPEN) {
+        abrirPortao();
+        manualOverrideUntil = millis() + overrideDuration;
+        Serial.println("Portão aberto manualmente via encoder");
+      } else if (dtValue == LOW && currentGatePos != SERVO_CLOSED) {
+        fecharPortao();
+        manualOverrideUntil = millis() + overrideDuration;
+        Serial.println("Portão fechado manualmente via encoder");
+      }
+      lastDebounceTime = millis();
     }
-    delay(150); // debounce encoder
   }
-  lastEncoderCLK = currentCLK;
+  lastCLK = currentCLK;
 }
+
 
 void controlarPortaoPorProximidade() {
   long distance = readDistance();
