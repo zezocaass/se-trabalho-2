@@ -3,7 +3,7 @@
 #include <Stepper.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Servo.h> 
+#include <Servo.h>
 
 #define DS18B20_PIN 9
 #define STEP_A 2
@@ -21,20 +21,27 @@
 #define SERVO_CLOSED 0
 const int DISTANCE_THRESHOLD = 10; // distância para abrir portão
 
+// Encoder
+#define ENCODER_CLK 7
+#define ENCODER_DT  A2
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Stepper stepper(2048, STEP_A, STEP_C, STEP_B, STEP_D);
 OneWire oneWire(DS18B20_PIN);
 DallasTemperature sensors(&oneWire);
-Servo gateServo; 
+Servo gateServo;
 
 const float TEMP_THRESHOLD = 24.0;
 float temperatura = 0.0;
 
-//Modos da ventoinha
 enum Mode { AUTO, MANUAL };
 Mode currentMode = AUTO;
 
 int currentGatePos = SERVO_CLOSED;
+
+int lastEncoderCLK = HIGH;
+unsigned long manualOverrideUntil = 0;
+const unsigned long overrideDuration = 5000; // 5 segundos
 
 void setup() {
   Serial.begin(9600);
@@ -48,7 +55,12 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   gateServo.attach(SERVO_PIN);
-  gateServo.write(currentGatePos); // Portão fechado inicialmente
+  gateServo.write(currentGatePos);
+
+  // Encoder
+  pinMode(ENCODER_CLK, INPUT_PULLUP);
+  pinMode(ENCODER_DT, INPUT_PULLUP);
+  lastEncoderCLK = digitalRead(ENCODER_CLK);
 }
 
 void loop() {
@@ -56,7 +68,11 @@ void loop() {
   handleJoystick();
   updateDisplay();
 
-  controlarPortaoPorProximidade();
+  handleEncoder();
+
+  if (millis() > manualOverrideUntil) {
+    controlarPortaoPorProximidade();
+  }
 
   if (currentMode == AUTO) {
     if (temperatura > TEMP_THRESHOLD) {
@@ -65,12 +81,29 @@ void loop() {
     } else {
       noTone(BUZZER_PIN);
     }
-  }
-  else if (currentMode == MANUAL) {
+  } else if (currentMode == MANUAL) {
     noTone(BUZZER_PIN);
     stepper.step(2048);
   }
-  delay(200);
+  delay(50);
+}
+
+void handleEncoder() {
+  int currentCLK = digitalRead(ENCODER_CLK);
+
+  // Deteta transição (queda) do CLK
+  if (lastEncoderCLK == HIGH && currentCLK == LOW) {
+    int dtValue = digitalRead(ENCODER_DT);
+    if (dtValue == HIGH && currentGatePos != SERVO_OPEN) {
+      abrirPortao();
+      manualOverrideUntil = millis() + overrideDuration;
+    } else if (dtValue == LOW && currentGatePos != SERVO_CLOSED) {
+      fecharPortao();
+      manualOverrideUntil = millis() + overrideDuration;
+    }
+    delay(150); // debounce encoder
+  }
+  lastEncoderCLK = currentCLK;
 }
 
 void controlarPortaoPorProximidade() {
